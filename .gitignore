@@ -1,0 +1,52 @@
+# === PHP / Composer ===
+vendor/
+composer.lock
+
+# === Environnement / Config ===
+.env
+*.env
+.env.local
+
+# === Cache / Logs ===
+cache/
+logs/
+*.log
+
+# === Dossiers sensibles ou temporaires ===
+uploads/
+tmp/
+files/
+
+# === IDE / Éditeurs ===
+.idea/
+.vscode/
+
+# === Système d’exploitation ===
+.DS_Store
+Thumbs.db
+
+# === Fichiers temporaires / sauvegardes ===
+*.bak
+*.swp
+*.swo
+
+# === NodeJS ===
+node_modules/
+package-lock.json
+yarn.lock
+
+# === BDD locales ===
+*.sqlite
+*.sqlite3
+*.db
+
+# === Tests / coverage ===
+coverage/
+phpunit.xml
+
+# === Archives / déploiement local ===
+*.zip
+*.tar.gz
+
+# === Fichiers perso ===
+/config/dev.php
