@@ -8,6 +8,7 @@ class UserController extends Controller
     public function login() : void
     {
         checkSession();
+        redirectIfConnected('Vous êtes déjà connecté.');
         $csrf_token = getCsrfToken();
         self::render('user/login', ['csrf_token' => $csrf_token]);
     }
@@ -29,6 +30,11 @@ class UserController extends Controller
             }
 
             if ($user && password_verify($password, $user['password'])) {
+
+                if (!$user['is_active']) {
+                    redirectWithError("Votre compte n'est pas encore activé.", 'user', 'login');
+                }
+
                 $_SESSION['user'] = [
                     'id' => $user['id'],
                     'username' => $user['username'],
@@ -42,6 +48,8 @@ class UserController extends Controller
                     'created_at' => $user['created_at'],
                     'is_active' => $user['is_active']
                 ];
+                $_SESSION['last_activity'] = time();
+
                 redirectWithSuccess("Connexion réussie !", 'home', 'index');
                 exit();
             } else {
@@ -54,8 +62,9 @@ class UserController extends Controller
     public function register() : void
     {
         checkSession();
-        $csrf_token = getCsrfToken();
-        self::render('user/register', ['csrf_token' => $csrf_token]);
+        redirectIfConnected('Impossible car déjà connecté.');
+            $csrf_token = getCsrfToken();
+            self::render('user/register', ['csrf_token' => $csrf_token]);
     }
 
     public function doRegister() : void
@@ -129,15 +138,26 @@ class UserController extends Controller
 
     public function logout() : void
     {
+        if (!isUserLoggedIn()) {
+            redirectWithError("Vous n'êtes pas connecté. Vous n'avez pas accès à cette fonctionnalité.", 'home', 'index');
+        }
+
         checkSession();
         session_unset();
         session_destroy();
-        redirectWithSuccess('Deconnexion avec succès.', 'home', 'index');
+        redirectWithSuccess('Déconnexion avec succès.', 'home', 'index');
     }
+
 
     public function allUsers() : void
     {
         self::render('user/all_users');
+    }
+
+    public function dashboard() : void
+    {
+        checkConnect();
+        self::render('user/dashboard');
     }
 
 }

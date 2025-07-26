@@ -18,7 +18,7 @@ $script_version = filemtime(__DIR__ . '/../../public/js/script.js');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/styles.css">
-    <script src="<?= BASE_URL ?>/public/js/script.js?=<?= $script_version ?>" defer></script>
+    <script src="<?= BASE_URL ?>/public/js/script.js?v=<?= $script_version ?>" defer></script>
     <title>CKS GO</title>
 </head>
 <body>
@@ -35,7 +35,12 @@ $script_version = filemtime(__DIR__ . '/../../public/js/script.js');
             <ul>
                 <li><a href="index.php?controller=home&action=index">Accueil</a></li>
                 <li><a href="#">Boutique</a></li>
-                <li><a href="index.php?controller=user&action=login">Se connecter</a></li>
+                <?php if(isUserLoggedIn()): ?>
+                    <li><a href="index.php?controller=user&action=dashboard">Tableau de bord</a></li>
+                    <li class="deco_button"><a href="index.php?controller=user&action=logout">Déconnexion</a></li>
+                <?php else: ?>
+                    <li class="co_button"><a href="index.php?controller=user&action=login">Se connecter</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>

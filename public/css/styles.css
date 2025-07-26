@@ -98,25 +98,35 @@ header h1 a:hover {
     padding: 10px;
     margin: 0 5rem 0 5rem;
     font-size: 18px;
-    bottom: 0;
     box-shadow: rgba(100, 100, 111, 0.2) 0 7px 29px 0;
-}
-
-.navbar ul li a {
-    white-space: nowrap;
 }
 
 .navbar ul {
     display: flex;
-    gap: 1.5rem;
-    justify-content: space-evenly;
+    gap: 2rem;
+    justify-content: center;
     align-items: center;
     list-style: none;
     width: 100%;
     max-width: 200px;
     margin: 0;
-    padding: 10px 0;
+    padding: 10px;
 }
+
+.navbar ul li a {
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.co_button {
+    font-weight: bold;
+}
+
+.deco_button {
+    font-weight: bold;
+    color: #aa3333;
+}
+
 
 /* ==========================
    MAIN PART
@@ -272,12 +282,62 @@ tr:nth-child(even) {
     display: inline-flex;
 }
 
-
 /* ==========================
-   MEDIA QUERIES
+   DASHBOARDS
 ========================== */
-@media (max-width: 600px) {
+
+
+.dashboard_info {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    background-color: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 8px;
+    box-shadow: rgba(100, 100, 111, 0.15) 0px 4px 20px 0px;
+    color: #0d47a1;
+    text-align: left;
+}
+
+/* Actions (boutons) */
+.dashboard_actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.dashboard_actions .btn {
+    background-color: #42a5f5;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: rgba(33, 150, 243, 0.3) 0px 4px 12px;
+}
+
+.dashboard_actions .btn:hover {
+    background-color: #1e88e5;
+    transform: translateY(-2px);
+}
+
+
+@media (max-width: 768px) {
     form, table {
         font-size: 0.9rem;
+    }
+
+/* ==========================
+   DASHBOARDS
+========================== */
+
+    .dashboard_actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
     }
 }

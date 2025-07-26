@@ -5,9 +5,8 @@ class HomeController extends Controller
 {
     public function index()
     {
-        isUserLoggedIn();
-        $csrf_token = getCsrfToken();
-        self::render('home/index', ['csrf_token' => $csrf_token]);
+        checkSession();
+        self::render('home/index');
     }
 
     public function about()
