@@ -4,10 +4,10 @@ require_once __DIR__ . '/../../helpers/functions.php';
 ?>
 
 <main class="main_part">
-    <h2>Dernières infos</h2>
+    <h2>Accueil</h2>
     <?= displayErrorOrSuccessMessage(); ?>
-
     <section>
+        <h3>Les news</h3>
 
     </section>
 </main>
