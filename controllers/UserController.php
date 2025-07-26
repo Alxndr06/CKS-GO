@@ -44,6 +44,7 @@ class UserController extends Controller
                     'note' => $user['note'],
                     'total_spent' => $user['total_spent'],
                     'role' => $user['role'],
+                    'unit' => $user['unit'],
                     'locked' => $user['locked'],
                     'created_at' => $user['created_at'],
                     'is_active' => $user['is_active']
@@ -78,6 +79,7 @@ class UserController extends Controller
             $email = strtolower(filter_var($_POST['email'], FILTER_SANITIZE_EMAIL));
             $passwordRaw = $_POST['password'];
             $confirmPasswordRaw = $_POST['confirmPassword'];
+            $unit = $_POST['unit'];
             $is_active = true; // Vrai par défaut
             $activation_token = bin2hex(random_bytes(32));
 
@@ -109,6 +111,15 @@ class UserController extends Controller
 
             if (!User::checkUnicity('username', $username)) {
                 $errors[] = "Ce pseudo est déjà utilisé.";
+            }
+
+            if (empty($unit)) {
+                $errors[] = "Vous devez sélectionner un service.";
+            }
+
+            $allowed_units = ['mineurs', 'vif', 'syndicat'];
+            if (!in_array($unit, $allowed_units)) {
+                $errors[] = "Service sélectionné invalide.";
             }
 
             if (!empty($errors)) {

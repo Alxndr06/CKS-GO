@@ -8,7 +8,7 @@ require_once __DIR__ . '/../../helpers/functions.php';
     <?= displayErrorOrSuccessMessage(); ?>
 
     <form method="POST" action="index.php?controller=user&action=doLogin">
-        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
 
         <label for="email">Email ou pseudo</label>
         <input type="text" id="email" name="email" required>
