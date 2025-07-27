@@ -66,7 +66,7 @@ function validateString(string $str) : bool {
 }
 
 /* GESTION DES REDIRECTIONS */
-function redirectTo($controller, $action) {
+function redirectTo(string $controller, string $action) {
     header("Location: index.php?controller=$controller&action=$action");
     exit();
 }
@@ -92,7 +92,7 @@ function redirectIfConnected(string $message) : void {
     }
 }
 
-function redirectIfUserNotAutorized($role): void {
+function redirectIfUserNotAutorized(string $role): void {
     checkSession();
     $role = strtolower($role);
     if (!$_SESSION['user']['role'] === $role) {

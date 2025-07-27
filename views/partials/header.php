@@ -46,7 +46,9 @@ $script_version = filemtime(__DIR__ . '/../../public/js/script.js');
             <ul>
                 <li><a href="index.php?controller=home&action=index">Accueil</a></li>
                 <li><a href="#">Boutique</a></li>
+                <?php if(isUserLoggedIn()): ?>
                 <li><a href="index.php?controller=user&action=dashboard">Tableau de bord</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
         <?= displayErrorOrSuccessMessage(); ?>
