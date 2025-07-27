@@ -5,7 +5,6 @@ require_once __DIR__ . '/../../helpers/functions.php';
 
 <main class="main_part dashboard">
     <h2>Tableau de bord</h2>
-    <?= displayErrorOrSuccessMessage(); ?>
     <section class="dashboard_info">
         <p>Bonjour <?= $_SESSION['user']['firstname'] ?> !</p>
     </section>
