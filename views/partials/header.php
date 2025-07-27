@@ -20,7 +20,6 @@ $script_version = filemtime(__DIR__ . '/../../public/js/script.js');
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/styles.css">
     <script src="<?= BASE_URL ?>/public/js/script.js?v=<?= $script_version ?>" defer></script>
     <title>CKS GO</title>
-    <?= displayErrorOrSuccessMessage(); ?>
 </head>
 <body>
 <div class="page_wrapper">
@@ -44,4 +43,5 @@ $script_version = filemtime(__DIR__ . '/../../public/js/script.js');
                 <?php endif; ?>
             </ul>
         </nav>
+        <?= displayErrorOrSuccessMessage(); ?>
     </header>
