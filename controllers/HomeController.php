@@ -1,5 +1,6 @@
 <?php
-require_once 'core/Controller.php';
+require_once __DIR__ . '/../core/Controller.php';
+require_once __DIR__ . '/../helpers/functions.php';
 
 class HomeController extends Controller
 {

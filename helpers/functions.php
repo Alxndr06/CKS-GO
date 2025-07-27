@@ -16,7 +16,7 @@ function checkConnect(): void {
     if (isset($_SESSION['last_activity']) && time() - $_SESSION['last_activity'] > $timeout) {
         session_unset();
         session_destroy();
-        redirectWithError("Session expirée. Veuillez vous reconnecter.", "user", "login");
+        redirectWithWarning("Session expirée. Veuillez vous reconnecter.", "user", "login");
     }
 
     // Mise à jour de l'activité
@@ -56,6 +56,12 @@ function displayErrorOrSuccessMessage() : string {
     } elseif (isset($_SESSION['error'])) {
         $message = sprintf('<p class="error_message">%s</p>', $_SESSION['error']);
         unset($_SESSION['error']);
+    } elseif (isset($_SESSION['warning'])) {
+        $message = sprintf('<p class="warning_message">%s</p>', $_SESSION['warning']);
+        unset($_SESSION['warning']);
+    } elseif (isset($_SESSION['information'])) {
+        $message = sprintf('<p class="info_message">%s</p>', $_SESSION['information']);
+        unset($_SESSION['information']);
     }
     return $message;
 }
@@ -73,6 +79,8 @@ function redirectTo(string $controller, string $action) {
 
 function redirectWithError(string $message, string $controller, string $action = 'index'): void {
     checkSession();
+    $symbole = "⛔ ";
+    $message = $symbole . $message;
     $_SESSION['error'] = $message;
     header("Location: index.php?controller=$controller&action=$action");
     exit();
@@ -80,7 +88,26 @@ function redirectWithError(string $message, string $controller, string $action =
 
 function redirectWithSuccess(string $message, string $controller, string $action = 'index'): void {
     checkSession();
+    $symbole = "✅ ";
+    $message = $symbole . $message;
     $_SESSION['success'] = $message;
+    header("Location: index.php?controller=$controller&action=$action");
+    exit();
+}
+function redirectWithWarning(string $message, string $controller, string $action = 'index'): void {
+    checkSession();
+    $symbole = "⚠️ ";
+    $message = $symbole . $message;
+    $_SESSION['warning'] = $message;
+    header("Location: index.php?controller=$controller&action=$action");
+    exit();
+}
+
+function redirectWithInformation(string $message, string $controller, string $action = 'index'): void {
+    checkSession();
+    $symbole = "🪧 ";
+    $message = $symbole . $message;
+    $_SESSION['information'] = $message;
     header("Location: index.php?controller=$controller&action=$action");
     exit();
 }
@@ -92,10 +119,10 @@ function redirectIfConnected(string $message) : void {
     }
 }
 
-function redirectIfUserNotAutorized(string $role): void {
-    checkSession();
+function checkRole(string $role): void {
+    checkConnect();
     $role = strtolower($role);
-    if (!$_SESSION['user']['role'] === $role) {
+    if (!isset($_SESSION['user']['role']) || $_SESSION['user']['role'] !== $role) {
         redirectWithError("Vous n'êtes pas autorisé à accéder à cette page.", 'home', 'index');
     }
 }
@@ -105,4 +132,19 @@ function isUserLoggedIn(): bool
 {
     checkSession();
     return isset($_SESSION['user']) && isset($_SESSION['user']['id']);
+}
+
+function isUserAuthorized(string $role): bool
+{
+    if (!isUserLoggedIn() || $_SESSION['user']['role'] !== $role) {
+        return false;
+    }
+    return true;
+}
+
+function isAdmin(): bool
+{
+    return isUserLoggedIn()
+        && isset($_SESSION['user']['role'])
+        && $_SESSION['user']['role'] === 'admin';
 }

@@ -103,6 +103,7 @@ header h1 a:hover {
 }
 
 .header_top {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -110,6 +111,9 @@ header h1 a:hover {
 }
 
 .header_top h1 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     margin: 0;
 }
 
@@ -128,6 +132,7 @@ header h1 a:hover {
 
 .btn_login:hover {
     background-color: #1e88e5;
+    color: white;
 }
 
 .btn_logout {
