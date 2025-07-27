@@ -24,23 +24,29 @@ $script_version = filemtime(__DIR__ . '/../../public/js/script.js');
 <body>
 <div class="page_wrapper">
     <header>
-        <button id="burger" class="toggle_menu" aria-label="Toggle navigation">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <h1><a title="Accueil du site" href="index.php?controller=home&action=index">CKS GO</a></h1>
+        <div class="header_top">
+            <button id="burger" class="toggle_menu" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1><a title="Accueil du site" href="index.php?controller=home&action=index">CKS GO</a></h1>
+
+            <div class="auth_button">
+                <?php if(isUserLoggedIn()): ?>
+                    <a class="btn_logout" href="index.php?controller=user&action=logout">Déconnexion</a>
+                <?php else: ?>
+                    <a class="btn_login" href="index.php?controller=user&action=login">Se connecter</a>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <nav class="navbar">
             <!-- NAV BAR -->
             <ul>
                 <li><a href="index.php?controller=home&action=index">Accueil</a></li>
                 <li><a href="#">Boutique</a></li>
-                <?php if(isUserLoggedIn()): ?>
-                    <li><a href="index.php?controller=user&action=dashboard">Tableau de bord</a></li>
-                    <li class="deco_button"><a href="index.php?controller=user&action=logout">Déconnexion</a></li>
-                <?php else: ?>
-                    <li class="co_button"><a href="index.php?controller=user&action=login">Se connecter</a></li>
-                <?php endif; ?>
+                <li><a href="index.php?controller=user&action=dashboard">Tableau de bord</a></li>
             </ul>
         </nav>
         <?= displayErrorOrSuccessMessage(); ?>

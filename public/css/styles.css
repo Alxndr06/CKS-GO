@@ -29,11 +29,16 @@ body {
     flex-grow: 1;
 }
 
+/* Informations display */
+
 .error_message,
-.success_message {
+.success_message,
+.warning_message,
+.info_message {
+    width: 50%;
+    margin: 20px auto 0 auto;
     padding: 12px;
     border-radius: 6px;
-    margin-bottom: 20px;
     text-align: center;
     font-size: 14px;
 }
@@ -48,6 +53,18 @@ body {
     background-color: #e0ffe5;
     color: #2e7d32;
     border: 1px solid #a5d6a7;
+}
+
+.warning_message {
+    background-color: #fff8e1;
+    color: #996c00;
+    border: 1px solid #ffe082;
+}
+
+.info_message {
+    background-color: #e1f5fe;
+    color: #0277bd;
+    border: 1px solid #81d4fa;
 }
 
 /* ==========================
@@ -84,6 +101,44 @@ header h1 {
 header h1 a:hover {
     color: inherit !important;
 }
+
+.header_top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.header_top h1 {
+    margin: 0;
+}
+
+.auth_button a {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.btn_login {
+    background-color: #72bfef;
+    color: white;
+}
+
+.btn_login:hover {
+    background-color: #1e88e5;
+}
+
+.btn_logout {
+    background-color: #ef9a9a;
+    color: #a33;
+}
+
+.btn_logout:hover {
+    background-color: #e57373;
+}
+
 
 /* ==========================
    NAVBAR
