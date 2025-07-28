@@ -356,7 +356,7 @@ tr:nth-child(even) {
     border-radius: 8px;
     box-shadow: rgba(100, 100, 111, 0.15) 0px 4px 20px 0px;
     color: #0d47a1;
-    text-align: left;
+    text-align: center;
 }
 
 /* Actions (boutons) */
