@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../helpers/functions.php';
     <h2>Tableau de bord</h2>
     <section class="dashboard_info">
         <p>Bonjour <?= $_SESSION['user']['firstname'] ?> !</p>
-        <p>Votre note: <?= $_SESSION['user']['note'] ?></p>
+        <p>Votre note: <strong><?= $_SESSION['user']['note'] ?></strong></p>
         <p>Votre rôle: <?= ucfirst($_SESSION['user']['role']) ?></p>
     </section>
 
