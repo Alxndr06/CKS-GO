@@ -6,9 +6,9 @@ require_once __DIR__ . '/../../helpers/functions.php';
 <main class="main_part dashboard">
     <h2>Tableau de bord</h2>
     <section class="dashboard_info">
-        <p>Bonjour <?= $_SESSION['user']['firstname'] ?> !</p>
-        <p>Votre note: <strong><?= $_SESSION['user']['note'] ?></strong></p>
-        <p>Votre rôle: <?= ucfirst($_SESSION['user']['role']) ?></p>
+        <p>Connecté en tant que: <strong><?= $_SESSION['user']['firstname'] ?></strong></p>
+        <p>Votre note: <strong><?= $_SESSION['user']['note'] ?> €</strong></p>
+        <p>Votre rôle: <strong><?= ucfirst($_SESSION['user']['role']) ?></strong></p>
     </section>
 
     <section class="dashboard_actions">

@@ -9,7 +9,7 @@ function checkSession() : void {
 
 function checkConnect(): void {
     checkSession();
-    // Durée max de la session (20mn)
+    // Durée max d'inactivité (20mn)
     $timeout = 1200;
 
     // Vérifie l'inactivité
@@ -41,7 +41,7 @@ function checkCsrfToken(): void {
         empty($_SESSION['csrf_token']) ||
         !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
     ) {
-        die("Invalid CSRF token.");
+        redirectWithError("Le token CSRF est invalide.", 'home', 'index');
     }
 }
 
@@ -115,7 +115,6 @@ function redirectWithInformation(string $message, string $controller, string $ac
 function redirectIfConnected(string $message) : void {
     if (isUserLoggedIn()) {
         redirectWithError($message, 'home', 'index');
-        exit();
     }
 }
 

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../helpers/functions.php';
 ?>
 
 <main class="main_part">
-    <h2>Connexion</h2>
+    <h2>Création de compte</h2>
 
     <form method="POST" action="index.php?controller=user&action=doRegister" class="register_form">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
