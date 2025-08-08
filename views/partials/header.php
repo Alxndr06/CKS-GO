@@ -41,8 +41,8 @@ $script_version = filemtime(__DIR__ . '/../../public/js/script.js');
             </div>
         </div>
 
-        <nav class="navbar">
-            <!-- NAV BAR -->
+        <nav class="navbar hide" id="main_navbar">
+        <!-- NAV BAR -->
             <ul>
                 <li><a href="index.php?controller=home&action=index">Accueil</a></li>
                 <li><a href="#">Boutique</a></li>

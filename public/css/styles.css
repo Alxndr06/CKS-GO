@@ -30,7 +30,6 @@ body {
 }
 
 /* Informations display */
-
 .error_message,
 .success_message,
 .warning_message,
@@ -117,6 +116,18 @@ header h1 a:hover {
     margin: 0;
 }
 
+.header_top {
+    justify-content: space-between;
+}
+
+.auth_button {
+    margin-left: auto;
+}
+
+.toggle_menu {
+    display: none;
+}
+
 .auth_button a {
     padding: 8px 16px;
     border-radius: 4px;
@@ -144,19 +155,16 @@ header h1 a:hover {
     background-color: #e57373;
 }
 
-
 /* ==========================
    NAVBAR
 ========================== */
-
-
 .navbar {
     display: flex;
     justify-content: center;
     border-radius: 10px;
     background-color: #ffffff;
     padding: 10px;
-    margin: 0 5rem 0 5rem;
+    margin: 0 5rem;
     font-size: 18px;
     box-shadow: rgba(100, 100, 111, 0.2) 0 7px 29px 0;
 }
@@ -187,11 +195,13 @@ header h1 a:hover {
     color: #aa3333;
 }
 
+.toggle_menu {
+    display: none;
+}
 
 /* ==========================
    MAIN PART
 ========================== */
-
 .main_part {
     align-items: center;
     background-color: #fff;
@@ -211,7 +221,6 @@ header h1 a:hover {
 /* ==========================
    FOOTER
 ========================== */
-
 .main_footer {
     font-size: small;
     color: inherit;
@@ -229,11 +238,9 @@ header h1 a:hover {
     list-style: none;
 }
 
-
 /* ==========================
    FORMULAIRES
 ========================== */
-
 form {
     background-color: #ffffff;
     border: 1px solid #90caf9;
@@ -292,8 +299,7 @@ form button:hover {
     width: 340px;
 }
 
-/* Boutons d'action dans lal liste d'users */
-
+/* Boutons d'action dans la liste d'users */
 .user-table td {
     white-space: nowrap;
 }
@@ -321,7 +327,6 @@ form button:hover {
     align-items: center;
     justify-content: center;
 }
-
 
 /* ==========================
    TABLEAUX
@@ -376,7 +381,42 @@ tr:nth-child(even) {
 /* ==========================
    DASHBOARDS
 ========================== */
+/* Style basique pour liste verticale */
+.simple_list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem auto;
+    max-width: 800px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem; /* Espace horizontal et vertical maîtrisé */
+}
 
+.simple_list li {
+    margin: 0; /* Corrige les héritages éventuels */
+}
+
+.simple_list li a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    border: 1px solid #90caf9;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #0d47a1;
+    transition: background-color 0.2s, transform 0.1s;
+    font-size: 1.05rem;
+    text-align: center;
+}
+
+.simple_list li a:hover {
+    background-color: #bbdefb;
+    transform: translateX(4px);
+}
 
 .dashboard_info {
     width: 70%;
@@ -396,10 +436,13 @@ tr:nth-child(even) {
 /* Actions (boutons) */
 .dashboard_actions {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    justify-content: center;
+    gap: 1rem;
     margin-top: 1rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .dashboard_actions .btn {
@@ -411,7 +454,7 @@ tr:nth-child(even) {
     font-weight: bold;
     font-size: 1rem;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: rgba(33, 150, 243, 0.3) 0px 4px 12px;
+    box-shadow: rgba(33, 150, 243, 0.3) 0 4px 12px;
 }
 
 .dashboard_actions .btn:hover {
@@ -419,19 +462,168 @@ tr:nth-child(even) {
     transform: translateY(-2px);
 }
 
+/* ==========================
+   RESPONSIVE MOBILE
+========================== */
 
 @media (max-width: 768px) {
     form, table {
         font-size: 0.9rem;
     }
-
-/* ==========================
-   DASHBOARDS
-========================== */
-
     .dashboard_actions {
+        gap: 0.8rem;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .simple_list {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* ==========================
+        NAVBAR ET MENU BURGER
+    ========================== */
+    .navbar {
+        position: fixed;
+        top: -400px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 320px;
+        max-height: 100vh;
+        overflow-y: auto;
+        border-radius: 15px;
+        background-color: #fff;
+        border: 1px solid #90caf9;
+        padding: 20px;
+        margin: 0 auto; /* ✅ CENTRAGE horizontal */
+        transition: top 0.3s ease;
+        z-index: 9999;
+        display: block;
+        text-align: center;
+        box-shadow: rgba(0, 0, 0, 0.1) 0 8px 24px;
+    }
+
+    .navbar.show {
+        top: 70px;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .navbar.hide {
+        top: -400px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .navbar ul {
         display: flex;
         flex-direction: column;
-        gap: 0.8rem;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0;
+        margin: 0;
     }
+
+    .navbar li {
+        list-style: none;
+        display: flex;
+        justify-content: center; /* ✅ centre le lien dans le li */
+        width: 100%;
+    }
+
+    .navbar a {
+        display: inline-block;
+        padding: 0.75rem 1.25rem;
+        border-radius: 6px;
+        background-color: #fff;
+        border: 1px solid #90caf9;
+        text-align: center;
+        transition: background 0.2s;
+        font-weight: bold;
+        color: #0d47a1;
+        min-width: 180px;
+    }
+
+    .navbar a:hover {
+        background-color: #E1DFC8;
+    }
+
+    #burger {
+        width: 40px;
+        height: 40px;
+        background-color: #72bfef;
+        border-radius: 6px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .toggle_menu {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10001; /* au-dessus du menu */
+    }
+
+    .toggle_menu span {
+        display: block;
+        width: 24px;
+        height: 3px;
+        background-color: #ffffff;
+        border-radius: 2px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* État ouvert */
+    .toggle_menu.open span:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .toggle_menu.open span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .toggle_menu.open span:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    .no-scroll {
+        overflow: hidden;
+    }
+
+    .auth_button a {
+        font-size: 0; /* ❌ masque le texte */
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    /* ✅ Icône cadenas ouvert pour Connexion */
+    .btn_login::before {
+        content: "🔓";
+        font-size: 18px;
+    }
+
+    /* ✅ Icône cadenas fermé pour Déconnexion */
+    .btn_logout::before {
+        content: "🔒";
+        font-size: 18px;
+    }
+
 }

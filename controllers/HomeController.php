@@ -4,13 +4,13 @@ require_once __DIR__ . '/../helpers/functions.php';
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index() : void
     {
         checkSession();
         self::render('home/index');
     }
 
-    public function about()
+    public function about() : void
     {
         self::render('home/about');
     }

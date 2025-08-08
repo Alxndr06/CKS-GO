@@ -7,19 +7,21 @@ require_once __DIR__ . '/../../models/User.php';
     <main class="main_part dashboard">
         <h2>Panel d'Administration</h2>
         <section class="dashboard_info">
-            <strong><p class="btn">Total hors caisse:</strong> <?= User::getSumOfNotes() ?></p>
-            <strong><p class="btn">Utilisateurs en attente:</strong> <?= User::getInactiveCount() ?></p>
-            <strong><p class="btn">Requêtes en attente:</strong> Bientôt</p>
+            <p class="btn"><strong>Total hors caisse :</strong> <?= User::getSumOfNotes() ?></p>
+            <p class="btn"><strong>Utilisateurs en attente :</strong> <?= User::getInactiveCount() ?></p>
+            <p class="btn"><strong>Requêtes en attente :</strong> Bientôt</p>
         </section>
 
         <section class="dashboard_actions">
-            <a href="#" class="btn">🗞️ News</a>
-            <a href="index.php?controller=user&action=allUsers" class="btn">👤 Utilisateurs</a>
-            <a href="#" class="btn">🛒 Boutique</a>
-            <a href="#" class="btn">💰 Facturation</a>
-            <a href="#" class="btn">📅 Evénements</a>
-            <a href="#" class="btn">📜 Logs</a>
-            <a href="#" class="btn">⚙️ Paramètres</a>
+            <ul class="simple_list">
+                <li><a href="#">🗞️ News</a>
+                <li><a href="index.php?controller=user&action=allUsers">👤 Utilisateurs</a></li>
+                <li><a href="#">🛒 Boutique</a></li>
+                <li><a href="#">💰 Facturation</a></li>
+                <li><a href="#">📅 Evénements</a></li>
+                <li><a href="#">📜 Logs</a></li>
+                <li><a href="index.php?controller=admin&action=serverSettings">⚙️ Paramètres</a></li>
+            </ul>
         </section>
     </main>
 
