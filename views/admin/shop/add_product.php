@@ -13,7 +13,7 @@ require_once __DIR__ . '/../../partials/header.php';
     <input type="text" name="product_name" id="product_name" placeholder="Nom">
 
     <label for="product_price">Prix du produit</label>
-    <input type="text" name="product_price" id="product_price" placeholder="Prix">
+    <input type="number" name="product_price" id="product_price" placeholder="Prix">
 </form>
 </main>
 
