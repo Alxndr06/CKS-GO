@@ -1,0 +1,17 @@
+# Bloquage de l'accès aux fichiers sensibles
+<FilesMatch "\.(env|git|htaccess|htpasswd|ini|phar|lock|json|md|yml|yaml|log|sql|bak|old|config\.php)$">
+  Require all denied
+</FilesMatch>
+
+# Interdire l'accès à certains dossiers
+RedirectMatch 403 ^/(config|db|vendor|private|backups|includes)(/|$)
+
+# Activer le moteur de réécriture
+RewriteEngine On
+
+# Ne pas réécrire les fichiers ou dossiers existants (CSS, JS, images…)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Réécrire tout le reste vers index.php
+RewriteRule ^(.+)$ index.php [QSA,L]
