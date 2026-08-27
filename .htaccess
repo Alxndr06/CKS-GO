@@ -1,17 +1,33 @@
-# Bloquage de l'accès aux fichiers sensibles
-<FilesMatch "\.(env|git|htaccess|htpasswd|ini|phar|lock|json|md|yml|yaml|log|sql|bak|old|config\.php)$">
-  Require all denied
-</FilesMatch>
+Options -Indexes
 
-# Interdire l'accès à certains dossiers
-RedirectMatch 403 ^/(config|db|vendor|private|backups|includes)(/|$)
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Permitted-Cross-Domain-Policies "none"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
 
-# Activer le moteur de réécriture
 RewriteEngine On
 
-# Ne pas réécrire les fichiers ou dossiers existants (CSS, JS, images…)
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+# Bloquer l'accès aux fichiers cachés (.env, .git, etc.) sauf .well-known
+RewriteRule "(^|/)\.(?!well-known/)" - [F,L]
 
-# Réécrire tout le reste vers index.php
-RewriteRule ^(.+)$ index.php [QSA,L]
+# Bloquer l'accès direct aux dossiers applicatifs non publics
+RewriteRule "^(config|controllers|core|database|helpers|lib|models|output|services|tests|tmp|uploads|views)(/|$)" - [F,L,NC]
+
+# Bloquer l'accès direct aux fichiers sensibles
+RewriteRule "(^|/)(composer\.(json|lock)|package(-lock)?\.json|yarn\.lock|phpunit\.xml|README(?:\.[^.]+)?|.*\.(env|ini|log|sql|bak|old|md|ya?ml))$" - [F,L,NC]
+
+# Interdire l'accès HTTP direct aux fichiers PHP hors front controller
+# Compatible avec un déploiement à la racine OU en sous-dossier (/v2/index.php)
+RewriteCond %{THE_REQUEST} \s/+(.+?\.php)(?:[\s?]|$) [NC]
+RewriteCond %1 !(^|/)index\.php$ [NC]
+RewriteRule ^ - [R=404,L]
+
+# Laisser passer les fichiers et dossiers publics existants
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Réécriture vers le front controller
+RewriteRule ^ index.php [QSA,L]

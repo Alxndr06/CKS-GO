@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" role="img" aria-labelledby="title description">
+  <title id="title">Visuel produit CKS GO</title>
+  <desc id="description">Illustration de remplacement pour un produit sans image.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eaf8fc"/>
+      <stop offset="1" stop-color="#edf9f4"/>
+    </linearGradient>
+    <linearGradient id="bag" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1680a8"/>
+      <stop offset="1" stop-color="#44b8aa"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="520" rx="52" fill="url(#background)"/>
+  <circle cx="584" cy="92" r="88" fill="#ffe8a8" opacity=".55"/>
+  <circle cx="116" cy="440" r="128" fill="#bdeadd" opacity=".48"/>
+  <g fill="none" stroke="#247b99" stroke-opacity=".14" stroke-width="3">
+    <circle cx="360" cy="240" r="176"/>
+    <ellipse cx="360" cy="240" rx="226" ry="124" transform="rotate(-20 360 240)"/>
+  </g>
+  <rect x="246" y="122" width="228" height="228" rx="66" fill="#fff" opacity=".9"/>
+  <g fill="none" stroke="url(#bag)" stroke-linecap="round" stroke-linejoin="round" stroke-width="18">
+    <path d="M300 204h120l-9 106H309l-9-106Z"/>
+    <path d="M330 213v-31c0-42 60-42 60 0v31"/>
+  </g>
+  <text x="360" y="410" fill="#26758e" font-family="Avenir Next, Century Gothic, sans-serif" font-size="30" font-weight="800" letter-spacing="8" text-anchor="middle">CKS GO</text>
+</svg>

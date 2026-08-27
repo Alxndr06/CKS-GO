@@ -22,10 +22,10 @@ require_once __DIR__ . '/../../helpers/functions.php';
         <input type="email" id="email" name="email" required>
 
         <label for="password">Mot de passe</label>
-        <input type="password" id="password" name="password" autocomplete="new-password" required>
+        <input type="password" id="password" name="password" minlength="15" maxlength="128" autocomplete="new-password" required>
 
         <label for="confirmPassword">Confirmer mot de passe</label>
-        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" >
+        <input type="password" id="confirmPassword" name="confirmPassword" minlength="15" maxlength="128" autocomplete="new-password" required>
 
         <label for="unit">Votre service</label>
         <select name="unit" id="unit" required>

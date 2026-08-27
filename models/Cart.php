@@ -1,8 +1,29 @@
 <?php
 require_once __DIR__ . '/../core/Model.php';
+require_once __DIR__ . '/User.php';
 
 class Cart extends Model
 {
+    private static function userCanSeeVisibility(int $userId, string $visibility): bool
+    {
+        if ($visibility !== 'admin_only') {
+            return true;
+        }
+
+        $stmt = self::getDB()->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
+        $stmt->execute([$userId]);
+        $role = strtolower((string)$stmt->fetchColumn());
+
+        return in_array($role, ['assistant', 'gestionnaire', 'responsable', 'admin'], true);
+    }
+
+    private static function assertUserCanUseShop(int $userId): void
+    {
+        if (User::isLocked($userId)) {
+            throw new RuntimeException("Votre compte est verrouillé. L'accès à la boutique est désactivé.");
+        }
+    }
+
     private static function getOrCreateCartId(int $userId): int
     {
         $db = self::getDB();
@@ -16,6 +37,7 @@ class Cart extends Model
         $stmt->execute([$userId]);
 
         $cartId = $stmt->fetchColumn();
+
         if ($cartId) {
             return (int)$cartId;
         }
@@ -29,7 +51,7 @@ class Cart extends Model
         return (int)$db->lastInsertId();
     }
 
-    private static function getVariantForCart(int $variantId): array
+    private static function getVariantForCart(int $variantId, int $userId): array
     {
         $db = self::getDB();
 
@@ -41,10 +63,13 @@ class Cart extends Model
                 v.stock_quantity,
                 v.is_active,
                 p.name AS product_name,
-                p.is_active AS product_is_active
+                p.is_active AS product_is_active,
+                p.visibility
             FROM product_variants v
             INNER JOIN products p ON p.id = v.product_id
             WHERE v.id = ?
+              AND v.archived_at IS NULL
+              AND p.archived_at IS NULL
             LIMIT 1
         ");
         $stmt->execute([$variantId]);
@@ -63,17 +88,23 @@ class Cart extends Model
             throw new RuntimeException("Cette variante n'est pas disponible.");
         }
 
+        if (!self::userCanSeeVisibility($userId, (string)($variant['visibility'] ?? 'public'))) {
+            throw new RuntimeException("Ce produit est réservé au staff.");
+        }
+
         return $variant;
     }
 
     public static function addItem(int $userId, int $productId, int $variantId, int $qty): bool
     {
+        self::assertUserCanUseShop($userId);
+
         $db = self::getDB();
         $db->beginTransaction();
 
         try {
             $cartId = self::getOrCreateCartId($userId);
-            $variant = self::getVariantForCart($variantId);
+            $variant = self::getVariantForCart($variantId, $userId);
 
             if ((int)$variant['product_id'] !== $productId) {
                 throw new RuntimeException("La variante ne correspond pas au produit sélectionné.");
@@ -127,6 +158,8 @@ class Cart extends Model
 
     public static function getDetailedCart(int $userId): array
     {
+        self::assertUserCanUseShop($userId);
+
         $db = self::getDB();
         $cartId = self::getOrCreateCartId($userId);
 
@@ -143,16 +176,20 @@ class Cart extends Model
                 v.price AS unit_price,
                 v.stock_quantity,
                 v.is_active AS variant_is_active,
+                p.is_active AS product_is_active,
+                p.visibility,
                 MAX(CASE WHEN va.attr_name = 'flavor' THEN va.attr_value END) AS flavor
             FROM cart_items ci
             INNER JOIN product_variants v ON v.id = ci.variant_id
             INNER JOIN products p ON p.id = v.product_id
             LEFT JOIN variant_attributes va ON va.variant_id = v.id
             WHERE ci.cart_id = ?
+              AND v.archived_at IS NULL
+              AND p.archived_at IS NULL
             GROUP BY
                 ci.id, ci.quantity, ci.variant_id,
                 p.id, p.name, p.image, p.description,
-                v.name, v.price, v.stock_quantity, v.is_active
+                v.name, v.price, v.stock_quantity, v.is_active, p.is_active, p.visibility
             ORDER BY ci.id DESC
         ");
         $stmt->execute([$cartId]);
@@ -168,7 +205,12 @@ class Cart extends Model
             $item['display_variant'] = !empty($item['flavor'])
                 ? $item['flavor']
                 : (!empty($item['variant_name']) ? $item['variant_name'] : 'Variante');
-            $item['is_available'] = ((int)$item['variant_is_active'] === 1 && $item['stock_quantity'] > 0);
+            $item['is_available'] = (
+                (int)$item['product_is_active'] === 1
+                && (int)$item['variant_is_active'] === 1
+                && $item['stock_quantity'] > 0
+                && self::userCanSeeVisibility($userId, (string)($item['visibility'] ?? 'public'))
+            );
             $subtotal += $item['line_total'];
         }
 
@@ -182,6 +224,8 @@ class Cart extends Model
 
     public static function updateItemQuantity(int $userId, int $cartItemId, int $qty): bool
     {
+        self::assertUserCanUseShop($userId);
+
         $db = self::getDB();
         $db->beginTransaction();
 
@@ -194,10 +238,15 @@ class Cart extends Model
                     ci.variant_id,
                     ci.quantity,
                     v.stock_quantity,
-                    v.is_active
+                    v.is_active,
+                    p.is_active AS product_is_active,
+                    p.visibility
                 FROM cart_items ci
                 INNER JOIN product_variants v ON v.id = ci.variant_id
+                INNER JOIN products p ON p.id = v.product_id
                 WHERE ci.id = ? AND ci.cart_id = ?
+                  AND v.archived_at IS NULL
+                  AND p.archived_at IS NULL
                 LIMIT 1
             ");
             $stmt->execute([$cartItemId, $cartId]);
@@ -207,8 +256,16 @@ class Cart extends Model
                 throw new RuntimeException("Ligne de panier introuvable.");
             }
 
+            if ((int)($item['product_is_active'] ?? 0) !== 1) {
+                throw new RuntimeException("Ce produit n'est plus disponible.");
+            }
+
             if ((int)$item['is_active'] !== 1 || (int)$item['stock_quantity'] <= 0) {
                 throw new RuntimeException("Cette variante n'est plus disponible.");
+            }
+
+            if (!self::userCanSeeVisibility($userId, (string)($item['visibility'] ?? 'public'))) {
+                throw new RuntimeException("Ce produit est réservé au staff.");
             }
 
             if ($qty < 1) {
@@ -239,6 +296,8 @@ class Cart extends Model
 
     public static function removeItem(int $userId, int $cartItemId): bool
     {
+        self::assertUserCanUseShop($userId);
+
         $db = self::getDB();
         $cartId = self::getOrCreateCartId($userId);
 
@@ -252,6 +311,8 @@ class Cart extends Model
 
     public static function clear(int $userId): bool
     {
+        self::assertUserCanUseShop($userId);
+
         $db = self::getDB();
         $cartId = self::getOrCreateCartId($userId);
 

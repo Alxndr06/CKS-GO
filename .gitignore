@@ -1,6 +1,5 @@
 # === PHP / Composer ===
 vendor/
-composer.lock
 
 # === Environnement / Config ===
 .env
@@ -9,7 +8,7 @@ composer.lock
 
 # === Cache / Logs ===
 cache/
-logs/
+/logs/
 *.log
 
 # === Dossiers sensibles ou temporaires ===
@@ -47,6 +46,13 @@ phpunit.xml
 # === Archives / déploiement local ===
 *.zip
 *.tar.gz
+/output/
+
+# === Opérations contenant des données métier nominatives ===
+/database/repairs/
 
 # === Fichiers perso ===
 /config/dev.php
+
+# === Secrets === #
+/config/local.php
