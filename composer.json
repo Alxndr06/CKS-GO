@@ -1,0 +1,18 @@
+{
+    "name": "alxndr06/cks-go",
+    "description": "Application web de gestion de caisse et de boutique interne.",
+    "type": "project",
+    "require": {
+        "php": ">=8.2",
+        "ext-fileinfo": "*",
+        "ext-mbstring": "*",
+        "ext-pdo": "*",
+        "phpmailer/phpmailer": "^7.1"
+    },
+    "config": {
+        "allow-plugins": false,
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    }
+}

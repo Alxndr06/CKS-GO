@@ -140,8 +140,9 @@ $buildReportWindow = static function (?string $createdAt, int $hours = 10): arra
                     $paidTotal = (float)($order['paid_total'] ?? 0);
                     $refundedTotal = (float)($order['refunded_total'] ?? 0);
                     $netPaidTotal = (float)($order['net_paid_total'] ?? max($paidTotal - $refundedTotal, 0));
+                    $remainingDue = max($totalPrice - $netPaidTotal, 0);
                     $paymentProgress = $totalPrice > 0
-                            ? min(100, max(0, (int)round(($paidTotal / $totalPrice) * 100)))
+                            ? min(100, max(0, (int)round(($netPaidTotal / $totalPrice) * 100)))
                             : 0;
 
                     $reportItems = array_values((array)($order['report_items'] ?? []));
@@ -229,9 +230,12 @@ $buildReportWindow = static function (?string $createdAt, int $hours = 10): arra
                                 </div>
 
                                 <div class="uorder_payment_metrics">
-                                    <p><span>Payé</span><strong><?= number_format($paidTotal, 2, ',', ' ') ?> €</strong></p>
-                                    <p><span>Remboursé</span><strong><?= number_format($refundedTotal, 2, ',', ' ') ?> €</strong></p>
                                     <p><span>Net payé</span><strong><?= number_format($netPaidTotal, 2, ',', ' ') ?> €</strong></p>
+                                    <p><span>Remboursé</span><strong><?= number_format($refundedTotal, 2, ',', ' ') ?> €</strong></p>
+                                    <p class="<?= $remainingDue > 0.009 ? 'has_remaining_due' : 'is_settled' ?>">
+                                        <span>Reste dû</span>
+                                        <strong><?= number_format($remainingDue, 2, ',', ' ') ?> €</strong>
+                                    </p>
                                 </div>
 
                                 <progress

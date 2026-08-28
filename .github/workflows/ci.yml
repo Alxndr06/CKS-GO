@@ -1,0 +1,115 @@
+name: Qualité et sécurité
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: PHP 8.2 / MariaDB 10.11
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      CKSGO_IGNORE_LOCAL_CONFIG: "1"
+      CKSGO_DB_HOST: 127.0.0.1
+      CKSGO_DB_USER: root
+      CKSGO_DB_PASS: root
+      CKSGO_DB_NAME: cksgo_runtime_guard
+      CKSGO_TEST_DB: cksgo_test_ci
+      CKSGO_APP_ENV: test
+      CKSGO_APP_DEBUG: "0"
+      CKSGO_MAIL_ENABLED: "0"
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: fileinfo, mbstring, pdo_mysql
+          coverage: none
+          tools: composer:v2
+
+      - name: Valider et installer les dépendances
+        run: |
+          composer validate --strict --no-check-publish
+          composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
+          composer audit --locked --no-interaction
+
+      - name: Vérifier la syntaxe PHP
+        run: find . -path ./vendor -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Préparer la base jetable
+        run: php tests/bootstrap_test_database.php --reset
+
+      - name: Exécuter les scénarios métier et sécurité
+        run: |
+          php tests/StaticSecurityAuditTest.php
+          php tests/SecurityWorkflowTest.php
+          php tests/AccessControlWorkflowTest.php
+          php tests/InventoryWorkflowTest.php
+          php tests/FinancialWorkflowTest.php
+          php tests/CommunicationWorkflowTest.php
+          php tests/AlertRefundWorkflowTest.php
+          php tests/prepare_browser_fixtures.php
+
+      - name: Démarrer le serveur de test
+        run: |
+          CKSGO_DB_NAME="$CKSGO_TEST_DB" php -S 127.0.0.1:8765 tests/dev_router.php > /tmp/cksgo-server.log 2>&1 &
+          echo $! > /tmp/cksgo-server.pid
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:8765/index.php >/dev/null && exit 0
+            sleep 0.2
+          done
+          cat /tmp/cksgo-server.log
+          exit 1
+
+      - name: Tester les protections HTTP et les rôles
+        shell: pwsh
+        run: |
+          ./tests/HttpSecurityWorkflowTest.ps1 -BaseUrl http://127.0.0.1:8765
+          ./tests/RoleAccessHttpTest.ps1 -BaseUrl http://127.0.0.1:8765
+
+      - name: Afficher le journal serveur en cas d’échec
+        if: failure()
+        run: cat /tmp/cksgo-server.log || true
+
+      - name: Supprimer la base jetable
+        if: always()
+        run: php tests/bootstrap_test_database.php --drop
+
+  secrets:
+    name: Détection de secrets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Récupérer le dépôt complet
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analyser l’historique Git
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

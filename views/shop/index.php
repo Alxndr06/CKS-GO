@@ -1,6 +1,6 @@
 <?php
-$pageStylesheets = array_merge($pageStylesheets ?? [], ['shop-variant-experiment.css']);
-$pageScripts = array_merge($pageScripts ?? [], ['shop-variant-experiment.js']);
+$pageStylesheets = array_merge($pageStylesheets ?? [], ['shop-catalog.css']);
+$pageScripts = array_merge($pageScripts ?? [], ['shop-catalog.js']);
 require_once __DIR__ . '/../partials/header.php';
 
 $quickCartItemCount = (int)($quickCart['item_count'] ?? 0);
@@ -31,7 +31,7 @@ if (!empty($q)) {
 $currentShopUrl = 'index.php?' . http_build_query($currentShopParams);
 ?>
 
-    <main class="main_part shop_page shop_page_redesign shop_variant_experiment">
+    <main class="main_part shop_page shop_page_redesign shop_catalog_page">
         <form
                 class="shop_filters shop_filters_redesign is_compact"
                 method="get"
@@ -163,8 +163,6 @@ $currentShopUrl = 'index.php?' . http_build_query($currentShopParams);
                             ? $initialVariantFlavor
                             : ($initialVariantName !== '' ? $initialVariantName : 'Variante');
 
-                    $isVariantPanelExpanded = false;
-
                     $initialVariantImage = resolvePublicImageFilename(
                             $initialVariant['image'] ?? null,
                             $fallbackProductImage
@@ -197,7 +195,7 @@ $currentShopUrl = 'index.php?' . http_build_query($currentShopParams);
                     ?>
 
                     <article
-                            class="product_card product_card_redesign shop_product_card_horizontal <?= !$hasAvailableVariants ? 'is_out_of_stock' : '' ?> <?= $isVariantPanelExpanded ? 'is_variant_expanded' : '' ?>"
+                            class="product_card product_card_redesign shop_product_card_horizontal <?= !$hasAvailableVariants ? 'is_out_of_stock' : '' ?>"
                             data-shop-product-card
                             data-shop-variant-card
                             data-search-text="<?= htmlspecialchars($productSearchText, ENT_QUOTES) ?>"
@@ -309,7 +307,7 @@ $currentShopUrl = 'index.php?' . http_build_query($currentShopParams);
                                                 type="button"
                                                 class="shop_variant_panel_toggle"
                                                 data-shop-variant-toggle
-                                                aria-expanded="<?= $isVariantPanelExpanded ? 'true' : 'false' ?>"
+                                                aria-expanded="false"
                                                 aria-controls="shop-product-variants-<?= $productId ?>"
                                         >
                                             <span>
@@ -328,8 +326,9 @@ $currentShopUrl = 'index.php?' . http_build_query($currentShopParams);
                                     class="shop_product_footer"
                                     id="shop-product-variants-<?= $productId ?>"
                                     data-shop-variant-panel
-                                    aria-hidden="<?= $isVariantPanelExpanded ? 'false' : 'true' ?>"
+                                    aria-hidden="true"
                             >
+                                <div class="shop_variant_panel_inner">
                                 <?php if (!empty($vars)): ?>
                                     <form
                                             method="post"
@@ -507,6 +506,7 @@ $currentShopUrl = 'index.php?' . http_build_query($currentShopParams);
                                         Connecte-toi pour signaler un souci sur ce produit.
                                     </p>
                                 <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </article>

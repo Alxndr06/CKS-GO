@@ -1,74 +1,90 @@
 <?php
+$pageStylesheets = array_merge($pageStylesheets ?? [], ['admin-orders.css']);
+$pageScripts = array_merge($pageScripts ?? [], ['admin-orders.js']);
 require_once __DIR__ . '/../../partials/header.php';
 
-$totalOrdersCount = (int) ($totalOrders ?? count($orders ?? []));
+$totalOrdersCount = (int)($totalOrders ?? count($orders ?? []));
 $invoiceMap = is_array($invoiceMap ?? null) ? $invoiceMap : [];
+$summaryTotalAmount = (float)($totalAmount ?? 0);
+$summaryTotalPaid = (float)($totalPaid ?? 0);
+$summaryTotalRemaining = (float)($totalRemaining ?? 0);
 $selectedEligibleCount = 0;
 
-$summaryTotalAmount = isset($totalAmount) ? (float) $totalAmount : 0.0;
-$summaryTotalPaid = isset($totalPaid) ? (float) $totalPaid : 0.0;
-$summaryTotalRemaining = isset($totalRemaining) ? (float) $totalRemaining : 0.0;
+$statusMap = [
+    'pending_payment' => ['label' => 'Paiement en attente', 'class' => 'is_pending'],
+    'paid' => ['label' => 'Payée', 'class' => 'is_paid'],
+    'partially_refunded' => ['label' => 'Partiellement remboursée', 'class' => 'is_refunded'],
+    'refunded' => ['label' => 'Remboursée', 'class' => 'is_refunded'],
+    'cancelled' => ['label' => 'Annulée', 'class' => 'is_cancelled'],
+];
 
-if (!isset($totalAmount, $totalPaid, $totalRemaining)) {
-    foreach (($orders ?? []) as $orderSummary) {
-        $lineTotal = (float) ($orderSummary['total_price'] ?? 0);
-        $linePaid = (float) ($orderSummary['amount_paid'] ?? 0);
-        $lineRemaining = max($lineTotal - $linePaid, 0);
+foreach (($orders ?? []) as $orderSummary) {
+    $summaryOrderId = (int)($orderSummary['id'] ?? 0);
 
-        $summaryTotalAmount += $lineTotal;
-        $summaryTotalPaid += $linePaid;
-        $summaryTotalRemaining += $lineRemaining;
+    if (($orderSummary['status'] ?? '') === 'paid' && !isset($invoiceMap[$summaryOrderId])) {
+        $selectedEligibleCount++;
     }
 }
 
-$statusMap = [
-        'pending_payment' => ['label' => 'Paiement en attente', 'class' => 'aord_badge_pending'],
-        'paid' => ['label' => 'Payée', 'class' => 'aord_badge_paid'],
-        'partially_refunded' => ['label' => 'Partiellement remboursée', 'class' => 'aord_badge_pending'],
-        'refunded' => ['label' => 'Remboursée', 'class' => 'aord_badge_cancelled'],
-        'cancelled' => ['label' => 'Annulée', 'class' => 'aord_badge_cancelled'],
-];
-
 $ordersPaginationTemplate = 'index.php?' . http_build_query([
-                'controller' => 'admin',
-                'action' => 'orders',
-                'page' => '__PAGE__',
-                'q' => (string) ($q ?? ''),
-                'status' => (string) ($status ?? ''),
-        ]);
+    'controller' => 'admin',
+    'action' => 'orders',
+    'page' => '__PAGE__',
+    'q' => (string)($q ?? ''),
+    'status' => (string)($status ?? ''),
+]);
 ?>
 
-<main class="main_part admin_dashboard_page admin_page_pro admin_orders_page_pro">
-    <section class="management_module_header">
-        <div class="management_module_header_copy">
-            <span class="section_kicker">Commandes</span>
-        <h2>Liste des commandes</h2>
-        <p>
-            Recherche une commande, filtre par statut et ouvre sa fiche détaillée ou sa facture.
-            </p>
-        </div>
-    </section>
+<main class="main_part admin_dashboard_page admin_page_pro admin_orders_page">
+    <section class="aorders_workspace" aria-labelledby="aorders-title">
+        <header class="aorders_header">
+            <div class="aorders_heading">
+                <span class="section_kicker">Commandes</span>
+                <div>
+                    <h1 id="aorders-title">Suivi des commandes</h1>
+                    <p>Retrouve une vente, contrôle son règlement et accède directement à ses actions.</p>
+                </div>
+            </div>
 
-    <section class="comms_filter_bar aord_filter_bar">
-        <form method="GET" action="index.php" class="comms_filter_form" data-auto-filter-form>
+            <dl class="aorders_kpis" aria-label="Synthèse financière des résultats">
+                <div>
+                    <dt>Commandes</dt>
+                    <dd><?= $totalOrdersCount ?></dd>
+                </div>
+                <div>
+                    <dt>Montant</dt>
+                    <dd><?= number_format($summaryTotalAmount, 2, ',', ' ') ?> €</dd>
+                </div>
+                <div class="is_paid">
+                    <dt>Encaissé</dt>
+                    <dd><?= number_format($summaryTotalPaid, 2, ',', ' ') ?> €</dd>
+                </div>
+                <div class="<?= $summaryTotalRemaining > 0.009 ? 'is_due' : 'is_paid' ?>">
+                    <dt>Reste dû</dt>
+                    <dd><?= number_format($summaryTotalRemaining, 2, ',', ' ') ?> €</dd>
+                </div>
+            </dl>
+        </header>
+
+        <form method="get" action="index.php" class="aorders_filters" data-auto-filter-form>
             <input type="hidden" name="controller" value="admin">
             <input type="hidden" name="action" value="orders">
 
-            <label class="comms_search_field">
-                <span>Rechercher</span>
+            <label class="aorders_search">
+                <span class="visually_hidden">Rechercher une commande</span>
+                <span aria-hidden="true"><?= renderUiIcon('search') ?></span>
                 <input
                     type="search"
                     name="q"
-                    value="<?= htmlspecialchars((string) ($q ?? '')) ?>"
-                    placeholder="Commande #, pseudo, nom, prénom, email..."
-                    aria-label="Rechercher une commande"
+                    value="<?= htmlspecialchars((string)($q ?? '')) ?>"
+                    placeholder="N° de commande, utilisateur, nom ou e-mail..."
                     autocomplete="off"
                     data-auto-filter
                 >
             </label>
 
-            <label>
-                <span>Statut</span>
+            <label class="aorders_status_filter">
+                <span class="visually_hidden">Filtrer par statut</span>
                 <select name="status" data-auto-filter>
                     <option value="">Tous les statuts</option>
                     <option value="pending_payment" <?= ($status ?? '') === 'pending_payment' ? 'selected' : '' ?>>Paiement en attente</option>
@@ -84,192 +100,144 @@ $ordersPaginationTemplate = 'index.php?' . http_build_query([
                 <a href="index.php?controller=admin&amp;action=orders">Effacer</a>
             <?php endif; ?>
         </form>
-
-        <span class="comms_result_count">
-            <?= $totalOrdersCount ?> commande<?= $totalOrdersCount > 1 ? 's' : '' ?>
-        </span>
     </section>
 
-    <section class="aord_summary_strip" aria-label="Synthèse financière des commandes affichées">
-        <dl class="aord_summary_grid">
-            <div class="aord_summary_card">
-                <dt class="aord_summary_label">Montant total</dt>
-                <dd class="aord_summary_value"><?= number_format($summaryTotalAmount, 2, ',', ' ') ?> €</dd>
-            </div>
-
-            <div class="aord_summary_card aord_summary_card_success">
-                <dt class="aord_summary_label">Déjà encaissé</dt>
-                <dd class="aord_summary_value"><?= number_format($summaryTotalPaid, 2, ',', ' ') ?> €</dd>
-            </div>
-
-            <div class="aord_summary_card aord_summary_card_warning">
-                <dt class="aord_summary_label">Reste dû</dt>
-                <dd class="aord_summary_value"><?= number_format($summaryTotalRemaining, 2, ',', ' ') ?> €</dd>
-            </div>
-        </dl>
-    </section>
-
-    <section class="admin_dashboard_section aord_list_section" aria-label="Commandes trouvées">
+    <section class="aorders_results" aria-label="Commandes trouvées">
         <?php if (empty($orders)): ?>
-            <div class="empty_state aord_empty_state">
-                <h3>Aucune commande trouvée</h3>
-                <p>Essaie une autre recherche ou un autre statut.</p>
+            <div class="aorders_empty">
+                <span aria-hidden="true"><?= renderUiIcon('orders') ?></span>
+                <h2>Aucune commande trouvée</h2>
+                <p>Modifie la recherche ou le statut sélectionné.</p>
+                <a href="index.php?controller=admin&amp;action=orders">Afficher toutes les commandes</a>
             </div>
         <?php else: ?>
-            <?php foreach (($orders ?? []) as $orderSummary): ?>
-                <?php
-                $summaryOrderId = (int) ($orderSummary['id'] ?? 0);
-                $summaryStatusKey = (string) ($orderSummary['status'] ?? 'pending_payment');
-                $summaryInvoice = $invoiceMap[$summaryOrderId] ?? null;
-                if ($summaryStatusKey === 'paid' && $summaryInvoice === null) {
-                    $selectedEligibleCount++;
-                }
-                ?>
-            <?php endforeach; ?>
+            <form
+                method="post"
+                action="index.php?controller=admin&amp;action=generateSelectedInvoices"
+                class="aorders_batch"
+                data-orders-batch
+            >
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string)($csrf_token ?? '')) ?>">
+                <input type="hidden" name="q" value="<?= htmlspecialchars((string)($q ?? '')) ?>">
+                <input type="hidden" name="status" value="<?= htmlspecialchars((string)($status ?? '')) ?>">
+                <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
 
-            <form method="POST" action="index.php?controller=admin&amp;action=generateSelectedInvoices" class="aord_batch_form">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string) ($csrf_token ?? '')) ?>">
-                <input type="hidden" name="q" value="<?= htmlspecialchars((string) ($q ?? '')) ?>">
-                <input type="hidden" name="status" value="<?= htmlspecialchars((string) ($status ?? '')) ?>">
-                <input type="hidden" name="page" value="<?= (int) ($page ?? 1) ?>">
-
-                <div class="aord_batch_header">
+                <div class="aorders_batchbar">
                     <div>
-                        <h3>Commandes</h3>
-                        <span><?= count($orders) ?> affichée<?= count($orders) > 1 ? 's' : '' ?> sur cette page</span>
+                        <strong><?= count($orders) ?> commande<?= count($orders) > 1 ? 's' : '' ?> sur cette page</strong>
+                        <span data-orders-selection-count aria-live="polite">Aucune sélection</span>
                     </div>
-
-                    <div class="admin_toolbar_actions_pro aord_batch_actions">
-                        <button type="submit" class="admin_toolbar_link_pro admin_toolbar_link_primary_pro"<?= $selectedEligibleCount > 0 ? '' : ' disabled' ?>>
-                            Générer les factures sélectionnées
-                        </button>
-                        <a class="admin_toolbar_link_pro admin_toolbar_link_soft_pro" href="index.php?controller=admin&amp;action=orders">
-                            Réinitialiser la vue
-                        </a>
-                    </div>
+                    <button type="submit" class="aorders_batch_submit" data-orders-batch-submit disabled>
+                        Générer les factures
+                    </button>
                 </div>
 
-                <div class="aord_list">
-                    <?php foreach ($orders as $order): ?>
-                        <?php
-                        $orderId = (int) ($order['id'] ?? 0);
-                        $fullName = trim((string) (($order['firstname'] ?? '') . ' ' . ($order['lastname'] ?? '')));
-                        $displayName = $fullName !== '' ? $fullName : (string) ($order['username'] ?? 'Utilisateur');
-                        $email = trim((string) ($order['email'] ?? ''));
-                        $statusKey = (string) ($order['status'] ?? 'pending_payment');
-                        $statusConfig = $statusMap[$statusKey] ?? $statusMap['pending_payment'];
-                        $invoice = $invoiceMap[$orderId] ?? null;
+                <div class="aorders_table" role="table" aria-label="Liste des commandes">
+                    <div class="aorders_table_head" role="row">
+                        <span role="columnheader">
+                            <?php if ($selectedEligibleCount > 0): ?>
+                                <label class="aorders_select_all" title="Sélectionner les commandes facturables">
+                                    <input type="checkbox" data-orders-select-all>
+                                    <span class="visually_hidden">Tout sélectionner</span>
+                                </label>
+                            <?php endif; ?>
+                        </span>
+                        <span role="columnheader">Commande</span>
+                        <span role="columnheader">Client</span>
+                        <span role="columnheader">Règlement</span>
+                        <span role="columnheader">État</span>
+                        <span role="columnheader">Actions</span>
+                    </div>
 
-                        $totalPrice = (float) ($order['total_price'] ?? 0);
-                        $amountPaid = (float) ($order['amount_paid'] ?? 0);
-                        $remainingDue = max($totalPrice - $amountPaid, 0);
-                        $canGenerateInvoice = $statusKey === 'paid' && $invoice === null;
-                        ?>
+                    <div class="aorders_rows" role="rowgroup">
+                        <?php foreach ($orders as $order): ?>
+                            <?php
+                            $orderId = (int)($order['id'] ?? 0);
+                            $fullName = trim((string)(($order['firstname'] ?? '') . ' ' . ($order['lastname'] ?? '')));
+                            $displayName = $fullName !== '' ? $fullName : (string)($order['username'] ?? 'Utilisateur');
+                            $email = trim((string)($order['email'] ?? ''));
+                            $statusKey = (string)($order['status'] ?? 'pending_payment');
+                            $statusConfig = $statusMap[$statusKey] ?? $statusMap['pending_payment'];
+                            $invoice = $invoiceMap[$orderId] ?? null;
+                            $totalPrice = (float)($order['total_price'] ?? 0);
+                            $amountPaid = (float)($order['amount_paid'] ?? 0);
+                            $remainingDue = max($totalPrice - $amountPaid, 0);
+                            $paymentProgress = $totalPrice > 0
+                                ? min(100, max(0, (int)round(($amountPaid / $totalPrice) * 100)))
+                                : 0;
+                            $canGenerateInvoice = $statusKey === 'paid' && $invoice === null;
+                            $createdTimestamp = strtotime((string)($order['created_at'] ?? ''));
+                            ?>
 
-                        <article class="aord_card">
-                            <div class="aord_card_main">
-                                <div class="aord_card_head">
-                                    <div class="aord_card_identity">
-                                        <div class="aord_card_title_row">
-                                            <h4>
-                                                <a href="index.php?controller=admin&amp;action=showOrder&amp;id=<?= $orderId ?>">
-                                                    Commande #<?= $orderId ?>
-                                                </a>
-                                            </h4>
-
-                                            <span class="aord_badge <?= htmlspecialchars($statusConfig['class']) ?>">
-                                                <?= htmlspecialchars($statusConfig['label']) ?>
-                                            </span>
-                                        </div>
-
-                                        <p class="aord_card_customer"><?= htmlspecialchars($displayName) ?></p>
-
-                                        <div class="aord_identity_meta">
-                                            <?php if ($email !== ''): ?>
-                                                <span><?= htmlspecialchars($email) ?></span>
-                                            <?php endif; ?>
-                                            <span>Créée le <strong><?= !empty($order['created_at']) ? htmlspecialchars(date('d/m/Y H:i', strtotime((string) $order['created_at']))) : '-' ?></strong></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="aord_metrics_grid">
-                                    <div class="aord_metric_card">
-                                        <span>Total</span>
-                                        <strong><?= number_format($totalPrice, 2, ',', ' ') ?> €</strong>
-                                    </div>
-
-                                    <div class="aord_metric_card aord_metric_card_success">
-                                        <span>Payé</span>
-                                        <strong><?= number_format($amountPaid, 2, ',', ' ') ?> €</strong>
-                                    </div>
-
-                                    <div class="aord_metric_card aord_metric_card_warning">
-                                        <span>Reste dû</span>
-                                        <strong><?= number_format($remainingDue, 2, ',', ' ') ?> €</strong>
-                                    </div>
-
-                                    <div class="aord_metric_card">
-                                        <span>Lignes</span>
-                                        <strong><?= (int) ($order['items_count'] ?? 0) ?></strong>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="aord_card_side">
-                                <div class="aord_side_stack">
-                                    <div class="aord_side_row">
-                                        <span>Utilisateur</span>
-                                        <strong><?= htmlspecialchars((string) ($order['username'] ?? '—')) ?></strong>
-                                    </div>
-
-                                    <div class="aord_side_row">
-                                        <span>Facture</span>
-                                        <strong>
-                                            <?php if ($invoice !== null): ?>
-                                                <?= htmlspecialchars((string) ($invoice['invoice_number'] ?? 'Générée')) ?>
-                                            <?php elseif ($statusKey === 'paid'): ?>
-                                                Non générée
-                                            <?php else: ?>
-                                                Indisponible
-                                            <?php endif; ?>
-                                        </strong>
-                                    </div>
-
+                            <article class="aorders_row" role="row">
+                                <div class="aorders_cell aorders_check_cell" role="cell">
                                     <?php if ($canGenerateInvoice): ?>
-                                        <div class="aord_side_row">
-                                            <label class="aord_batch_check">
-                                                <input type="checkbox" name="order_ids[]" value="<?= $orderId ?>">
-                                                <span>Sélectionner pour le lot</span>
-                                            </label>
-                                        </div>
+                                        <label title="Sélectionner la commande #<?= $orderId ?>">
+                                            <input type="checkbox" name="order_ids[]" value="<?= $orderId ?>" data-orders-selectable>
+                                            <span class="visually_hidden">Sélectionner la commande #<?= $orderId ?></span>
+                                        </label>
+                                    <?php else: ?>
+                                        <span class="aorders_check_placeholder" aria-hidden="true"></span>
                                     <?php endif; ?>
                                 </div>
 
-                                <a
-                                        class="aord_btn aord_btn_secondary aord_btn_full"
-                                        href="index.php?controller=admin&amp;action=showOrder&amp;id=<?= $orderId ?>"
-                                >
-                                    Voir le détail
-                                </a>
+                                <div class="aorders_cell aorders_order_cell" role="cell" data-label="Commande">
+                                    <a href="index.php?controller=admin&amp;action=showOrder&amp;id=<?= $orderId ?>">#<?= $orderId ?></a>
+                                    <time<?= $createdTimestamp ? ' datetime="' . htmlspecialchars(date(DATE_ATOM, $createdTimestamp)) . '"' : '' ?>>
+                                        <?= $createdTimestamp ? htmlspecialchars(date('d/m/Y à H:i', $createdTimestamp)) : 'Date indisponible' ?>
+                                    </time>
+                                    <small><?= (int)($order['items_count'] ?? 0) ?> ligne<?= (int)($order['items_count'] ?? 0) > 1 ? 's' : '' ?></small>
+                                </div>
 
-                                <?php if ($invoice !== null): ?>
-                                    <a
-                                            class="aord_btn aord_btn_secondary aord_btn_full"
-                                            href="index.php?controller=admin&amp;action=showInvoice&amp;id=<?= (int) ($invoice['id'] ?? 0) ?>"
-                                    >
-                                        Voir la facture
+                                <div class="aorders_cell aorders_customer_cell" role="cell" data-label="Client">
+                                    <strong><?= htmlspecialchars($displayName) ?></strong>
+                                    <span>@<?= htmlspecialchars((string)($order['username'] ?? '—')) ?></span>
+                                    <?php if ($email !== ''): ?><small><?= htmlspecialchars($email) ?></small><?php endif; ?>
+                                </div>
+
+                                <div class="aorders_cell aorders_payment_cell" role="cell" data-label="Règlement">
+                                    <div>
+                                        <strong><?= number_format($amountPaid, 2, ',', ' ') ?> €</strong>
+                                        <span>sur <?= number_format($totalPrice, 2, ',', ' ') ?> €</span>
+                                    </div>
+                                    <progress max="100" value="<?= $paymentProgress ?>" aria-label="<?= $paymentProgress ?> % encaissé"><?= $paymentProgress ?> %</progress>
+                                    <small class="<?= $remainingDue > 0.009 ? 'has_due' : 'is_settled' ?>">
+                                        <?= $remainingDue > 0.009 ? number_format($remainingDue, 2, ',', ' ') . ' € restant' : 'Soldée' ?>
+                                    </small>
+                                </div>
+
+                                <div class="aorders_cell aorders_state_cell" role="cell" data-label="État">
+                                    <span class="aorders_status <?= htmlspecialchars($statusConfig['class']) ?>">
+                                        <?= htmlspecialchars($statusConfig['label']) ?>
+                                    </span>
+                                    <?php if ($invoice !== null): ?>
+                                        <span class="aorders_invoice is_ready"><?= htmlspecialchars((string)($invoice['invoice_number'] ?? 'Facture générée')) ?></span>
+                                    <?php elseif ($statusKey === 'paid'): ?>
+                                        <span class="aorders_invoice">Facture à générer</span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="aorders_cell aorders_actions" role="cell" data-label="Actions">
+                                    <a href="index.php?controller=admin&amp;action=showOrder&amp;id=<?= $orderId ?>">
+                                        <?= renderUiIcon('eye') ?>
+                                        <span>Détail</span>
                                     </a>
-                                <?php endif; ?>
-                            </div>
-                        </article>
-                    <?php endforeach; ?>
+                                    <?php if ($invoice !== null): ?>
+                                        <a href="index.php?controller=admin&amp;action=showInvoice&amp;id=<?= (int)($invoice['id'] ?? 0) ?>">
+                                            <?= renderUiIcon('invoice') ?>
+                                            <span>Facture</span>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </form>
 
             <?php
-            $paginationCurrentPage = (int) ($page ?? 1);
-            $paginationTotalPages = (int) ($totalPages ?? 1);
+            $paginationCurrentPage = (int)($page ?? 1);
+            $paginationTotalPages = (int)($totalPages ?? 1);
             $paginationLabel = 'Pagination des commandes';
             $paginationPageTemplate = $ordersPaginationTemplate;
             require __DIR__ . '/../../partials/admin_pagination.php';

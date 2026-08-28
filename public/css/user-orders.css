@@ -514,6 +514,22 @@
     white-space: nowrap;
 }
 
+.uorder_payment_metrics p.has_remaining_due {
+    background: #fff8eb;
+}
+
+.uorder_payment_metrics p.has_remaining_due strong {
+    color: #a66308;
+}
+
+.uorder_payment_metrics p.is_settled {
+    background: #edf9f4;
+}
+
+.uorder_payment_metrics p.is_settled strong {
+    color: #14785f;
+}
+
 .uorder_payment_track {
     display: block;
     width: 100%;

@@ -768,9 +768,42 @@ class Order extends Model
         return $stats;
     }
 
-    public static function searchAdminOrders(?string $q = null, ?string $status = null): array
+    private static function buildAdminOrderFilters(?string $q, ?string $status): array
+    {
+        $where = '';
+        $params = [];
+
+        if ($q !== null && $q !== '') {
+            $like = '%' . $q . '%';
+            $where .= "
+                AND (
+                    CAST(o.id AS CHAR) LIKE ?
+                    OR u.username LIKE ?
+                    OR u.firstname LIKE ?
+                    OR u.lastname LIKE ?
+                    OR u.email LIKE ?
+                )
+            ";
+            $params = array_fill(0, 5, $like);
+        }
+
+        if ($status !== null && $status !== '') {
+            $where .= ' AND o.status = ?';
+            $params[] = $status;
+        }
+
+        return [$where, $params];
+    }
+
+    public static function searchAdminOrders(
+        ?string $q = null,
+        ?string $status = null,
+        ?int $limit = null,
+        int $offset = 0
+    ): array
     {
         $db = self::getDB();
+        [$where, $params] = self::buildAdminOrderFilters($q, $status);
 
         $sql = "
             SELECT
@@ -800,41 +833,50 @@ class Order extends Model
                 GROUP BY order_id
             ) AS payment_summary ON payment_summary.order_id = o.id
             WHERE 1
-        ";
-
-        $params = [];
-
-        if ($q !== null && $q !== '') {
-            $like = '%' . $q . '%';
-            $sql .= "
-                AND (
-                    CAST(o.id AS CHAR) LIKE ?
-                    OR u.username LIKE ?
-                    OR u.firstname LIKE ?
-                    OR u.lastname LIKE ?
-                    OR u.email LIKE ?
-                )
-            ";
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-        }
-
-        if ($status !== null && $status !== '') {
-            $sql .= " AND o.status = ?";
-            $params[] = $status;
-        }
-
-        $sql .= "
+            {$where}
             ORDER BY o.created_at DESC, o.id DESC
         ";
+
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . max(1, $limit) . ' OFFSET ' . max(0, $offset);
+        }
 
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function summarizeAdminOrders(?string $q = null, ?string $status = null): array
+    {
+        $db = self::getDB();
+        [$where, $params] = self::buildAdminOrderFilters($q, $status);
+        $stmt = $db->prepare("
+            SELECT
+                COUNT(*) AS total_orders,
+                COALESCE(SUM(o.total_price), 0) AS total_amount,
+                COALESCE(SUM(COALESCE(payment_summary.amount_paid, 0)), 0) AS total_paid,
+                COALESCE(SUM(GREATEST(o.total_price - COALESCE(payment_summary.amount_paid, 0), 0)), 0)
+                    AS total_remaining
+            FROM orders o
+            INNER JOIN users u ON u.id = o.user_id
+            LEFT JOIN (
+                SELECT order_id, SUM(amount_paid) AS amount_paid
+                FROM payments
+                WHERE status = 'captured'
+                GROUP BY order_id
+            ) AS payment_summary ON payment_summary.order_id = o.id
+            WHERE 1
+            {$where}
+        ");
+        $stmt->execute($params);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: [
+            'total_orders' => 0,
+            'total_amount' => 0,
+            'total_paid' => 0,
+            'total_remaining' => 0,
+        ];
     }
 
     public static function getAdminOrderById(int $orderId): ?array

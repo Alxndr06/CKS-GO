@@ -1,5 +1,16 @@
 # Base de données CKS GO 2.0
 
+## Installation neuve
+
+Pour une installation sans base historique, importez directement `database/schema.sql`. Ce fichier contient le schéma cible complet (33 tables et contraintes d'intégrité), sans compte ni donnée métier. Ne rejouez ensuite aucune migration datée.
+
+```powershell
+C:\xampp\mysql\bin\mysql.exe -u root -p -e "CREATE DATABASE cksgo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+C:\xampp\mysql\bin\mysql.exe -u root -p cksgo -e "SOURCE database/schema.sql"
+```
+
+Créez le premier administrateur avec `scripts/create_admin.php` comme indiqué dans le README principal.
+
 ## Migration définitive depuis `cksgo_db.sql`
 
 Le fichier à exécuter est :

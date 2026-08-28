@@ -1,58 +1,43 @@
-# === PHP / Composer ===
-vendor/
+# PHP / Composer
+/vendor/
 
-# === Environnement / Config ===
-.env
-*.env
-.env.local
+# Configuration locale et secrets
+/.env
+/.env.*
+/config/local.php
+/config/dev.php
 
-# === Cache / Logs ===
-cache/
+# Données d'exécution
+/cache/
 /logs/
+/tmp/
+/files/
+/uploads/
+/coverage/
+/output/
 *.log
 
-# === Dossiers sensibles ou temporaires ===
-uploads/
-tmp/
-files/
+# Images produit ajoutées en exploitation
+/public/img/products/*
+!/public/img/products/.htaccess
 
-# === IDE / Éditeurs ===
-.idea/
-.vscode/
-
-# === Système d’exploitation ===
-.DS_Store
-Thumbs.db
-
-# === Fichiers temporaires / sauvegardes ===
-*.bak
-*.swp
-*.swo
-
-# === NodeJS ===
-node_modules/
-package-lock.json
-yarn.lock
-
-# === BDD locales ===
+# Données métier, sauvegardes et exports locaux
+/database/repairs/
 *.sqlite
 *.sqlite3
 *.db
-
-# === Tests / coverage ===
-coverage/
-phpunit.xml
-
-# === Archives / déploiement local ===
 *.zip
 *.tar.gz
-/output/
 
-# === Opérations contenant des données métier nominatives ===
-/database/repairs/
+# Outils et éditeurs
+/.idea/
+/.vscode/
+/.codex-*/
+/node_modules/
+.DS_Store
+Thumbs.db
 
-# === Fichiers perso ===
-/config/dev.php
-
-# === Secrets === #
-/config/local.php
+# Fichiers temporaires
+*.bak
+*.swp
+*.swo

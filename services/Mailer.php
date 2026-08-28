@@ -1,8 +1,14 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../lib/PHPMailer/src/Exception.php';
-require_once __DIR__ . '/../lib/PHPMailer/src/PHPMailer.php';
-require_once __DIR__ . '/../lib/PHPMailer/src/SMTP.php';
+
+$composerAutoloader = __DIR__ . '/../vendor/autoload.php';
+
+if (!is_file($composerAutoloader)) {
+    throw new RuntimeException('Dépendances absentes. Exécutez « composer install » à la racine du projet.');
+}
+
+require_once $composerAutoloader;
+unset($composerAutoloader);
 
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;

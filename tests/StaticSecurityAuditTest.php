@@ -69,4 +69,66 @@ foreach ($applicationDirectories as $directory) {
 $helperSource = (string)file_get_contents($root . '/helpers/functions.php');
 staticSecurityAssert(!str_contains($helperSource, "'unsafe-inline'"), 'La politique CSP contient encore unsafe-inline.');
 
+foreach ([
+    "ini_set('session.use_strict_mode', '1')",
+    "ini_set('session.use_only_cookies', '1')",
+    "ini_set('session.use_trans_sid', '0')",
+    "'httponly' => true",
+    "'samesite' => 'Lax'",
+] as $requiredSessionControl) {
+    staticSecurityAssert(
+        str_contains($helperSource, $requiredSessionControl),
+        'Protection de session absente : ' . $requiredSessionControl
+    );
+}
+
+$schemaSource = (string)file_get_contents($root . '/database/schema.sql');
+$requiredConstraints = [
+    'chk_product_variants_stock_nonnegative',
+    'chk_product_variants_price_nonnegative',
+    'chk_cart_items_quantity_positive',
+    'chk_order_items_quantity_positive',
+    'chk_order_items_price_nonnegative',
+    'chk_payments_amount_nonnegative',
+    'chk_refunds_quantity_positive',
+    'chk_refunds_amount_nonnegative',
+    'chk_alert_refunds_quantity_positive',
+    'chk_alert_refunds_amount_nonnegative',
+];
+
+foreach ($requiredConstraints as $constraint) {
+    staticSecurityAssert(
+        str_contains($schemaSource, $constraint),
+        'Contrainte SQL de sécurité absente : ' . $constraint
+    );
+}
+
+$composerLock = json_decode((string)file_get_contents($root . '/composer.lock'), true);
+staticSecurityAssert(is_array($composerLock), 'Le verrou Composer est absent ou invalide.');
+$phpMailerPackage = null;
+
+foreach (($composerLock['packages'] ?? []) as $package) {
+    if (($package['name'] ?? '') === 'phpmailer/phpmailer') {
+        $phpMailerPackage = $package;
+        break;
+    }
+}
+
+staticSecurityAssert(is_array($phpMailerPackage), 'PHPMailer n’est pas verrouillé par Composer.');
+$phpMailerVersion = ltrim((string)($phpMailerPackage['version'] ?? ''), 'v');
+staticSecurityAssert(
+    version_compare($phpMailerVersion, '7.1.0', '>='),
+    'La version de PHPMailer doit intégrer les durcissements de la branche 7.1.'
+);
+
+$shopViewSource = (string)file_get_contents($root . '/views/shop/index.php');
+staticSecurityAssert(
+    !str_contains($shopViewSource, 'variant-experiment'),
+    'La boutique référence encore le prototype de variantes.'
+);
+staticSecurityAssert(
+    preg_match('/data-shop-variant-toggle\s+aria-expanded="false"/', $shopViewSource) === 1,
+    'Le volet variantes doit être fermé par défaut.'
+);
+
 echo "StaticSecurityAuditTest: OK\n";

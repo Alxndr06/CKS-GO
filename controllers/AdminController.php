@@ -2675,6 +2675,12 @@ class AdminController extends Controller
         $csrf_token = getCsrfToken();
         $q = normalizeSearchQuery($_GET['q'] ?? '');
         $status = isset($_GET['status']) ? trim($_GET['status']) : '';
+        $allowedStatuses = ['pending_payment', 'paid', 'partially_refunded', 'refunded', 'cancelled'];
+
+        if ($status !== '' && !in_array($status, $allowedStatuses, true)) {
+            $status = '';
+        }
+
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $perPage = 12;
 
@@ -2684,30 +2690,25 @@ class AdminController extends Controller
             // On évite de casser la liste si une commande est incohérente.
         }
 
-        $allOrders = Order::searchAdminOrders($q !== '' ? $q : null, $status !== '' ? $status : null);
-        $totalOrders = count($allOrders);
+        $summary = Order::summarizeAdminOrders($q !== '' ? $q : null, $status !== '' ? $status : null);
+        $totalOrders = (int)($summary['total_orders'] ?? 0);
         $totalPages = max(1, (int)ceil($totalOrders / $perPage));
 
         if ($page > $totalPages) {
             $page = $totalPages;
         }
 
-        $totalAmount = 0.0;
-        $totalPaid = 0.0;
-        $totalRemaining = 0.0;
-
-        foreach ($allOrders as $orderSummary) {
-            $lineTotal = (float)($orderSummary['total_price'] ?? 0);
-            $linePaid = (float)($orderSummary['amount_paid'] ?? 0);
-            $lineRemaining = max($lineTotal - $linePaid, 0);
-
-            $totalAmount += $lineTotal;
-            $totalPaid += $linePaid;
-            $totalRemaining += $lineRemaining;
-        }
+        $totalAmount = (float)($summary['total_amount'] ?? 0);
+        $totalPaid = (float)($summary['total_paid'] ?? 0);
+        $totalRemaining = (float)($summary['total_remaining'] ?? 0);
 
         $offset = ($page - 1) * $perPage;
-        $orders = array_slice($allOrders, $offset, $perPage);
+        $orders = Order::searchAdminOrders(
+            $q !== '' ? $q : null,
+            $status !== '' ? $status : null,
+            $perPage,
+            $offset
+        );
         $orderIds = [];
 
         foreach ($orders as $orderSummary) {
@@ -2803,7 +2804,6 @@ class AdminController extends Controller
 
         $orderId = isset($_POST['order_id']) ? (int)$_POST['order_id'] : 0;
         $adminId = (int)($_SESSION['user']['id'] ?? 0);
-        $refundStockAction = (($_POST['refund_stock_action'] ?? '') === 'consumed') ? 'consumed' : 'restock';
         $refundStockAction = (($_POST['refund_stock_action'] ?? '') === 'consumed') ? 'consumed' : 'restock';
 
         if ($orderId <= 0 || $adminId <= 0) {

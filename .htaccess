@@ -1,33 +1,14 @@
 Options -Indexes
 
-<IfModule mod_headers.c>
-    Header always set X-Frame-Options "DENY"
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set X-Permitted-Cross-Domain-Policies "none"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Seuls le point d'entrée et les fichiers publics doivent être servis directement.
+    RewriteRule ^(?:index\.php)?$ - [L]
+    RewriteRule ^public/ - [L]
+    RewriteRule ^ - [R=404,L]
 </IfModule>
 
-RewriteEngine On
-
-# Bloquer l'accès aux fichiers cachés (.env, .git, etc.) sauf .well-known
-RewriteRule "(^|/)\.(?!well-known/)" - [F,L]
-
-# Bloquer l'accès direct aux dossiers applicatifs non publics
-RewriteRule "^(config|controllers|core|database|helpers|lib|models|output|services|tests|tmp|uploads|views)(/|$)" - [F,L,NC]
-
-# Bloquer l'accès direct aux fichiers sensibles
-RewriteRule "(^|/)(composer\.(json|lock)|package(-lock)?\.json|yarn\.lock|phpunit\.xml|README(?:\.[^.]+)?|.*\.(env|ini|log|sql|bak|old|md|ya?ml))$" - [F,L,NC]
-
-# Interdire l'accès HTTP direct aux fichiers PHP hors front controller
-# Compatible avec un déploiement à la racine OU en sous-dossier (/v2/index.php)
-RewriteCond %{THE_REQUEST} \s/+(.+?\.php)(?:[\s?]|$) [NC]
-RewriteCond %1 !(^|/)index\.php$ [NC]
-RewriteRule ^ - [R=404,L]
-
-# Laisser passer les fichiers et dossiers publics existants
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# Réécriture vers le front controller
-RewriteRule ^ index.php [QSA,L]
+<FilesMatch "(?i)^(?:\.env|composer\.(?:json|lock)|.*\.(?:sql|log|ini|bak))$">
+    Require all denied
+</FilesMatch>
