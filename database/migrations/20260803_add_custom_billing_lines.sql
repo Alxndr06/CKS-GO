@@ -21,6 +21,14 @@ PREPARE alter_order_items_product_id_stmt FROM @alter_order_items_product_id;
 EXECUTE alter_order_items_product_id_stmt;
 DEALLOCATE PREPARE alter_order_items_product_id_stmt;
 
+-- Les variantes sont archivées par l'application. Une suppression physique ne doit
+-- pas effacer la référence historique d'une ligne de commande et empêcher le CHECK
+-- ci-dessous d'être appliqué sur MariaDB 10.11+.
+ALTER TABLE order_items
+    DROP FOREIGN KEY fk_order_items_variant,
+    ADD CONSTRAINT fk_order_items_variant
+        FOREIGN KEY (variant_id) REFERENCES product_variants(id);
+
 ALTER TABLE order_items
     ADD COLUMN line_type VARCHAR(20) NOT NULL DEFAULT 'product' AFTER variant_id,
     ADD CONSTRAINT chk_order_items_line_type
@@ -38,4 +46,3 @@ FROM order_items
 WHERE line_type NOT IN ('product', 'custom')
    OR (line_type = 'product' AND product_id IS NULL)
    OR (line_type = 'custom' AND (product_id IS NOT NULL OR variant_id IS NOT NULL));
-

@@ -332,7 +332,7 @@ CREATE TABLE `order_items` (
   KEY `idx_order_items_variant` (`variant_id`),
   CONSTRAINT `fk_order_items_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_order_items_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
-  CONSTRAINT `fk_order_items_variant` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_order_items_variant` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`),
   CONSTRAINT `chk_order_items_line_type` CHECK (`line_type` in ('product','custom')),
   CONSTRAINT `chk_order_items_line_source` CHECK (`line_type` = 'product' and `product_id` is not null or `line_type` = 'custom' and `product_id` is null and `variant_id` is null),
   CONSTRAINT `chk_order_items_quantity_positive` CHECK (`quantity` > 0),

@@ -89,6 +89,7 @@ $requiredConstraints = [
     'chk_cart_items_quantity_positive',
     'chk_order_items_quantity_positive',
     'chk_order_items_price_nonnegative',
+    'chk_order_items_line_source',
     'chk_payments_amount_nonnegative',
     'chk_refunds_quantity_positive',
     'chk_refunds_amount_nonnegative',
@@ -102,6 +103,11 @@ foreach ($requiredConstraints as $constraint) {
         'Contrainte SQL de sécurité absente : ' . $constraint
     );
 }
+
+staticSecurityAssert(
+    preg_match('/fk_order_items_variant[^\n]+ON DELETE SET NULL/i', $schemaSource) !== 1,
+    'La référence historique d’une variante commandée ne doit pas être effacée par une suppression physique.'
+);
 
 $composerLock = json_decode((string)file_get_contents($root . '/composer.lock'), true);
 staticSecurityAssert(is_array($composerLock), 'Le verrou Composer est absent ou invalide.');
