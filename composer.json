@@ -1,6 +1,7 @@
 {
     "name": "alxndr06/cks-go",
     "description": "Application web de gestion de caisse et de boutique interne.",
+    "license": "proprietary",
     "type": "project",
     "require": {
         "php": ">=8.2",
